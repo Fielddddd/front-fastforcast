@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FARMFORECAST</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #8BC34A;
+            --accent-color: #FFC107;
+            --text-color: #333;
+            --background-color: #F0F4F7;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: url('https://img5.pic.in.th/file/secure-sv1/----d04cad4955872565.md.jpg');
+            background-size: cover;
+            background-position: center;
+            color: var(--text-color);
+            backdrop-filter: blur(5px);
+        }
+
+        .header {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 600px;
+            margin-bottom: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .dropdown-container, .file-date-container {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .search-input, .file-upload-input, .search-select {
+            flex-grow: 1;
+            padding: 12px;
+            font-size: 1rem;
+            border: 2px solid var(--secondary-color);
+            border-radius: 8px;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            
+        }
+
+        .search-input:focus, .file-upload-input:focus, .search-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .forecast-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .preview-button
+        {
+            background-color: white;
+            color: #4CAF50;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .forecast-button:hover, .preview-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80%;
+            overflow: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--text-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .file-note {
+            color: #f44336;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            display: block;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #forecastResult {
+            margin-top: 30px;
+            width: 90%;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                font-size: 2rem;
+            }
+
+            .input-container {
+                width: 95%;
+            }
+
+            .search-input, .file-upload-input, .search-select {
+                font-size: 0.9rem;
+            }
+
+            .forecast-button, .preview-button {
+                font-size: 0.9rem;
+                padding: 10px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                font-size: 1.8rem;
+            }
+
+            .input-container {
+                width: 100%;
+            }
+
+            .file-date-container {
+                flex-direction: column;
+            }
+
+            .search-input, .file-upload-input {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">🌱 FARMFORECAST 🌾</div>
+    
+    <div class="input-container">
+        <div class="dropdown-container">
+            <select class="search-select" id="vegetableSelect">
+                <option value="" disabled selected>Choose vegetable 🍅</option>
+                <option value="RedOak">RedOak🥬</option>
+                <option value="GreenOak">GreenOak🥗</option>
+                <option value="RedCoral">RedCoral🌽</option>
+                <option value="Frillice">Frillice🥒</option>
+            </select>
+            
+        </div>
+
+        <div class="file-date-container">
+            <input type="month" class="search-input" placeholder="เลือกเดือนและปี" id="monthInput">
+            <input type="file" class="file-upload-input" id="fileInput" accept=".csv">
+        </div>
+
+        <div class="file-note">* กรุณาอัปโหลดไฟล์ผักที่เป็น .csv ที่ตรงกับชนิดผักที่เลือก (ต้องมีข้อมูลอย่างน้อย 15 เดือน) ไฟล์ที่อัปโหลดต้องเป็นไฟล์ without BOM</div>
+   
+        <div class="button-container">
+            <button class="preview-button" onclick="showPreview()">👁️ ดูตัวอย่างไฟล์</button>
+
+        <script>
+            function showPreview() {
+                window.open("https://img2.pic.in.th/pic/Screenshot-2024-10-08-203131.png", "_blank");
+            }
+        </script>
+
+            <button class="forecast-button" onclick="generateForecast()">🔮 ทำนาย</button>
+
+        </div>
+        
+   
+    </div>
+    
+    
+
+    <!-- Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>ตัวอย่างไฟล์</h3>
+            <img src="img/examplepic.jpg" alt="ตัวอย่าง">
+        </div>
+    </div>
+
+    <div id="forecastResult"></div>
+
+    <script src="nut.js"></script>
+</body>
+</html>
