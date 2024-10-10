@@ -31,6 +31,9 @@ async function generateForecast() {
     formData.append('vegetable', vegetableSelect);
     formData.append('file', fileInput);
 
+    // แสดงหน้าโหลด
+    document.getElementById('loadingIndicator').style.display = 'block';
+
     try {
         const response = await fetch("https://deploy-fastapi.vercel.app/upload_csv", {
             method: 'POST',
@@ -46,6 +49,9 @@ async function generateForecast() {
         calculatePlantingSchedule(forecastData, vegetableSelect); // Call function to calculate planting schedule
     } catch (error) {
         console.error('Error:', error);
+    } finally {
+        // ซ่อนหน้าโหลดหลังการประมวลผล
+        document.getElementById('loadingIndicator').style.display = 'none';
     }
 }
 
