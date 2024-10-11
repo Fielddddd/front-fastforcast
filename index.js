@@ -34,21 +34,52 @@ async function generateForecast() {
     // แสดงหน้าโหลด
     document.getElementById('loadingIndicator').style.display = 'block';
 
+    // เพิ่มการตั้งค่า timeout (30 วินาที) ด้วย AbortController
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // ตั้งเวลา 30 วินาที
+
     try {
         const response = await fetch("https://deploy-fastapi.vercel.app/upload_csv", {
             method: 'POST',
-            body: formData
+            body: formData,
+            signal: controller.signal // ใช้ AbortController ในคำขอ
         });
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
+        clearTimeout(timeoutId); // เคลียร์ timeout เมื่อคำขอสำเร็จ
 
+        if (!response.ok) {
+            const errorText = await response.text(); // รับข้อความ error
+            alert('Error with your file, Please check again');
+            console.error('Network response was not ok:', errorText);
+            return;
+        }
+        
         const forecastData = await response.json();
         console.log('Forecast data:', forecastData); // Logging the data from API for debugging
-        calculatePlantingSchedule(forecastData, vegetableSelect); // Call function to calculate planting schedule
+
+        // ดึงค่าที่ทำนายจาก predicted_sales[0][monthIndex]
+        const monthIndex = new Date(monthInput).getMonth(); // Index ของเดือน (0-11)
+        const predictedSales = forecastData.predicted_sales[0][monthIndex]; // ดึงค่าจาก predicted_sales
+
+        // ตรวจสอบว่ามีข้อมูลการทำนายหรือไม่
+        if (predictedSales != null) {
+            // ปัดเศษค่าที่ดึงมา
+            const roundedSales = Math.round(predictedSales); // ปัดเศษค่าที่ดึงมา
+            
+            // อัปเดตค่า predictedSales ที่ <span id="predicted-weight">
+            document.getElementById('predicted-weight').innerText = roundedSales; // ใช้ค่าที่ปัดเศษ
+            document.getElementById('prediction-result').style.display = 'block'; // แสดงกรอบผลลัพธ์
+        }
+
+        // เรียกใช้ฟังก์ชันการคำนวณกำหนดการปลูก
+        calculatePlantingSchedule(forecastData, vegetableSelect);
     } catch (error) {
-        console.error('Error:', error);
+        if (error.name === 'AbortError') {
+            alert('คำขอหมดเวลา กรุณาลองใหม่'); // ข้อความแจ้งเตือนเมื่อเกิด timeout
+            console.error('Request timeout: ', error);
+        } else {
+            console.error('Error:', error);
+        }
     } finally {
         // ซ่อนหน้าโหลดหลังการประมวลผล
         document.getElementById('loadingIndicator').style.display = 'none';
@@ -96,18 +127,24 @@ function calculatePlantingSchedule(data, vegetable) {
     const predictedSales = data.predicted_sales[0][monthIndex]; // ดึงข้อมูลจากเดือนที่เลือก (0-11)
     
     // ถ้าค่า predictedSales ไม่ใช่ตัวเลข (undefined หรือ null)
-    if (predictedSales == null) {
+ 
+        // ตรวจสอบว่ามีข้อมูลการทำนายหรือไม่
+    if (predictedSales === null || predictedSales === undefined) {
+        alert('ไม่มีข้อมูลการทำนายสำหรับเดือนนี้'); // แสดง alert
         console.error('No predicted sales data for the selected month');
+        return;
+    }
+
+    if (predictedSales === "Error occurred while predicting.") {
+        alert('เกิดข้อผิดพลาดในการคาดการณ์'); // แสดง alert
+        console.error(predictedSales); // แสดงข้อความ error ใน console
         return;
     }
 
     // คำนวณจำนวนพืชที่ต้องการ
     const quantityForWeek = Math.ceil(predictedSales / 3);
 
-    console.log("Month Index: ", monthIndex);
     const month = monthIndex + 1;
-    console.log("Month: ", month);
-
     const plantsPerKg = getPlantsPerKg(vegetable, month); // ดึงจำนวนพืชต่อกิโลกรัม
 
     // คำนวณจำนวนพืชทั้งหมดที่ต้องการ
@@ -117,40 +154,34 @@ function calculatePlantingSchedule(data, vegetable) {
     const startDate = new Date(document.getElementById('monthInput').value + '-01');
 
     const plantingSchedule = [];
-  // ลูปสำหรับการปลูก 3 รอบ (ทุก 10 วัน)
- // ลูปสำหรับการปลูก 3 รอบ (ทุก 10 วัน)
- for (let i = 0; i < 3; i++) {
-    const roundStartDate = new Date(startDate);
-    roundStartDate.setDate(roundStartDate.getDate() + i * 10); // ตั้งแต่เริ่มปลูกห่างกัน 10 วัน
+    // ลูปสำหรับการปลูก 3 รอบ (ทุก 10 วัน)
+    for (let i = 0; i < 3; i++) {
+        const roundStartDate = new Date(startDate);
+        roundStartDate.setDate(roundStartDate.getDate() + i * 10); // ตั้งแต่เริ่มปลูกห่างกัน 10 วัน
 
-    // วันที่เริ่มเก็บเกี่ยวจะถูกคำนวณจากการบวก 42 วันจาก roundStartDate
-    const harvestDate = new Date(roundStartDate);
-    harvestDate.setDate(harvestDate.getDate() - 42); // วันเริ่มเก็บเกี่ยวคือ 42 วันหลังจากการเพาะเมล็ด
+        // วันที่เริ่มเก็บเกี่ยวจะถูกคำนวณจากการบวก 42 วันจาก roundStartDate
+        const harvestDate = new Date(roundStartDate);
+        harvestDate.setDate(harvestDate.getDate() - 42); // วันเริ่มเก็บเกี่ยวคือ 42 วันหลังจากการเพาะเมล็ด
 
-    // วันที่เริ่มลงแปลงจะถูกคำนวณจากการนับถอยหลัง 35 วันจาก harvestDate
-    const transplantDate = new Date(roundStartDate); // สร้างวันที่จาก harvestDate
-    transplantDate.setDate(transplantDate.getDate() - 35); // ลบ 35 วันจาก harvestDate
+        // วันที่เริ่มลงแปลงจะถูกคำนวณจากการนับถอยหลัง 35 วันจาก harvestDate
+        const transplantDate = new Date(roundStartDate); 
+        transplantDate.setDate(transplantDate.getDate() - 35); 
 
-
-    plantingSchedule.push({
-        week: i + 1,
-        quantity: totalRequiredPlants, // จำนวนที่คำนวณได้
-        startDate: roundStartDate, // วันเริ่มเพาะเมล็ด
-        transplantDate: transplantDate, // วันเริ่มปลูก
-        harvestDate: harvestDate // วันเริ่มเก็บเกี่ยว
-    });
-}
-
-
+        plantingSchedule.push({
+            week: i + 1,
+            quantity: totalRequiredPlants, // จำนวนที่คำนวณได้
+            startDate: roundStartDate, // วันเริ่มเพาะเมล็ด
+            transplantDate: transplantDate, // วันเริ่มปลูก
+            harvestDate: harvestDate // วันเริ่มเก็บเกี่ยว
+        });
+    }
 
     // แสดงตารางการปลูก
     displayForecast(plantingSchedule);
 }
 
-
-// Function to display forecast data in a table
 function displayForecast(data) {
-    document.getElementById('forecastResult').style.display = "flex"
+    document.getElementById('forecastResult').style.display = "block";
     const tableContainer = document.getElementById('forecastResult');
     tableContainer.innerHTML = ''; // Clear previous data
 
@@ -160,7 +191,7 @@ function displayForecast(data) {
 
     // Create table header
     const headerRow = document.createElement('tr');
-    const headers = ['รอบที่ปลูก', 'จำนวน', 'วันที่เริ่มเพาะเมล็ด', 'วันที่เริ่มลงแปลง', 'วันที่เริ่มเก็บ'];
+    const headers = ['Round', 'Quantity of plants', 'Seeding date', 'Transplanting date', 'Harvest date'];
     headers.forEach(headerText => {
         const th = document.createElement('th');
         th.style.border = '1px solid #000';
@@ -187,4 +218,11 @@ function displayForecast(data) {
 
     // Append table to the container
     tableContainer.appendChild(table);
+
+    // Create and append planting info below the table
+    const plantingInfo = document.createElement('div');
+    plantingInfo.style.marginTop = '20px';
+    plantingInfo.style.textAlign = 'center';
+    plantingInfo.innerHTML = `<span style="color: gray;">* Frillice, GreenOak 1 kg approximately 7 plants and RedCoral, RedOak 1 kg approximately 8 plants *</span>`;
+    tableContainer.appendChild(plantingInfo);
 }

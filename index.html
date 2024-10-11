@@ -24,6 +24,7 @@
             background-image: url('https://img5.pic.in.th/file/secure-sv1/----d04cad4955872565.md.jpg');
             background-size: cover;
             background-position: center;
+            background-repeat: no-repeat;
             color: var(--text-color);
             backdrop-filter: blur(5px);
         }
@@ -48,6 +49,7 @@
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+        
 
         .dropdown-container, .file-date-container {
             display: flex;
@@ -168,7 +170,91 @@
             padding: 20px;
             border-radius: 15px;
             display: none;
+            overflow-x: auto;
         }
+
+        table {
+            width: 100%; /* ให้ตารางเต็มพื้นที่ภายในกรอบ */
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+            text-align: center;
+        }
+
+        .navbar {
+            width: 90%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 5%; /* ปรับระยะห่างเพื่อให้ดูดีในหน้าจอเล็ก */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            text-align: center;
+            display: flex; /* ใช้ Flexbox */
+            flex-direction: column; /* ให้ข้อความอยู่ในแนวตั้ง */
+            align-items: center; /* จัดกลางข้อความ */
+        }
+
+        .navbar p {
+            margin: 0;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap; /* ให้มีการห่อข้อความ */
+        }
+
+        .navbar-text {
+            margin: 0 5px; /* เพิ่มระยะห่างระหว่างข้อความ */
+        }
+
+        /* Media Query สำหรับหน้าจอเล็ก */
+        @media (max-width: 480px) {
+            .navbar p {
+                font-size: 0.8rem; /* ปรับขนาดฟอนต์ */
+            }
+        }
+
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            margin: 0 5px;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        .icon {
+            margin-right: 5px;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .icon:hover {
+            animation: shake 0.7s; /* ใช้การเคลื่อนไหวสั่นเมื่อ hover */
+        }
+
+        /* สร้างการเคลื่อนไหวสั่น */
+        @keyframes shake {
+            0%{ transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        
+
+        @media screen and (max-width: 600px) {
+            table {
+                font-size: 12px; /* ลดขนาดฟอนต์เมื่อหน้าจอเล็ก */
+            }
+        }
+
+        
 
         @media (max-width: 768px) {
             .header {
@@ -232,18 +318,18 @@
             <input type="file" class="file-upload-input" id="fileInput" accept=".csv">
         </div>
 
-        <div class="file-note">* กรุณาอัปโหลดไฟล์ผักที่เป็น .csv ที่ตรงกับชนิดผักที่เลือก (ต้องมีข้อมูลอย่างน้อย 15 เดือน) ไฟล์ที่อัปโหลดต้องเป็นไฟล์ without BOM</div>
+        <div class="file-note"> * Please upload a .csv vegetable file that matches the selected vegetable type. (Must contain at least 15 months of data) Uploaded file must be without BOM.</div>
    
         <div class="button-container">
-            <button class="preview-button" onclick="showPreview()">👁️ ดูตัวอย่างไฟล์</button>
+            <button class="preview-button" onclick="showPreview()">👁️ Examples file</button>
 
         <script>
             function showPreview() {
-                window.open("https://img2.pic.in.th/pic/Screenshot-2024-10-08-203131.png", "_blank");
+                window.open("https://img2.pic.in.th/pic/example-file.png", "_blank");
             }
         </script>
 
-            <button class="forecast-button" onclick="generateForecast()">🔮 ทำนาย</button>
+            <button class="forecast-button" onclick="generateForecast()">🔮 Predicts </button>
 
         </div>
         
@@ -256,7 +342,7 @@
     <div id="previewModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <h3>ตัวอย่างไฟล์</h3>
+            <h3>Examples file</h3>
             <img src="img/examplepic.jpg" alt="ตัวอย่าง">
         </div>
     </div>
@@ -265,8 +351,29 @@
         <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
     </div>
 
-    <div id="forecastResult"></div>
+    <div id="prediction-result" style="display: none; margin-top: 1px; border: 2px solid ; border-radius: 15px; padding: 3px; background-color: #f9f9f9; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 20%;text-align: center; ">
+        <h3 style="color: #333;">🌱 Weight Result: <span id="predicted-weight" style="font-weight: sans-serif; margin: 10px;"></span> kg</h3>
+    </div>
+  
+    
+    <div id="forecastResult">
+        <div id="planting-info">
+            Frillice, GreenOak 1 kg approximately 7 plants<br>
+            RedCoral, RedOak 1 kg approximately 8 plants
+        </div>
+    </div>
 
     <script src="nut.js"></script>
+
+    <div class="navbar"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <p>
+            <i class="fas fa-envelope icon"></i>
+            Email: <a href="mailto:example@example.com">example@example.com</a> | 
+            <i class="fas fa-phone-alt icon"></i>
+            Phone: <a href="tel:0123456789">012-345-6789</a>
+        </p>
+    </div>
+    
+
 </body>
 </html>
