@@ -39,7 +39,7 @@ async function generateForecast() {
     const timeoutId = setTimeout(() => controller.abort(), 30000); // ตั้งเวลา 30 วินาที
 
     try {
-        const response = await fetch("https://deploy-fastapi.vercel.app/upload_csv", {
+        const response = await fetch("https://deploy-fastapi-b3beaf65e792.herokuapp.com/", {
             method: 'POST',
             body: formData,
             signal: controller.signal // ใช้ AbortController ในคำขอ
