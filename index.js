@@ -191,7 +191,7 @@ function displayForecast(data) {
 
     // Create table header
     const headerRow = document.createElement('tr');
-    const headers = ['Round', 'Quantity of plants', 'Seeding date', 'Transplanting date', 'Harvest date'];
+    const headers = ['Round', 'Quantity of plants (ea.)', 'Seeding date', 'Transplanting date', 'Harvest date'];
     headers.forEach(headerText => {
         const th = document.createElement('th');
         th.style.border = '1px solid #000';
