@@ -175,7 +175,7 @@
         }
 
         table {
-            width: 100%; /* ให้ตารางเต็มพื้นที่ภายในกรอบ */
+            width: 100%;
             border-collapse: collapse;
         }
 
@@ -189,14 +189,14 @@
             width: 90%;
             background-color: #4CAF50;
             color: white;
-            padding: 10px 5%; /* ปรับระยะห่างเพื่อให้ดูดีในหน้าจอเล็ก */
+            padding: 10px 5%;
             position: fixed;
             bottom: 0;
             left: 0;
             text-align: center;
-            display: flex; /* ใช้ Flexbox */
-            flex-direction: column; /* ให้ข้อความอยู่ในแนวตั้ง */
-            align-items: center; /* จัดกลางข้อความ */
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
         }
 
         .navbar p {
@@ -205,17 +205,16 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-wrap: wrap; /* ให้มีการห่อข้อความ */
+            flex-wrap: wrap;
         }
 
         .navbar-text {
-            margin: 0 5px; /* เพิ่มระยะห่างระหว่างข้อความ */
+            margin: 0 5px;
         }
 
-        /* Media Query สำหรับหน้าจอเล็ก */
         @media (max-width: 480px) {
             .navbar p {
-                font-size: 0.8rem; /* ปรับขนาดฟอนต์ */
+                font-size: 0.8rem;
             }
         }
 
@@ -238,10 +237,9 @@
         }
 
         .icon:hover {
-            animation: shake 0.7s; /* ใช้การเคลื่อนไหวสั่นเมื่อ hover */
+            animation: shake 0.7s;
         }
 
-        /* สร้างการเคลื่อนไหวสั่น */
         @keyframes shake {
             0%{ transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -251,12 +249,11 @@
 
         @media screen and (max-width: 600px) {
             table {
-                font-size: 12px; /* ลดขนาดฟอนต์เมื่อหน้าจอเล็ก */
+                font-size: 12px; 
             }
         }
 
         
-
         @media (max-width: 768px) {
             .header {
                 font-size: 2rem;
